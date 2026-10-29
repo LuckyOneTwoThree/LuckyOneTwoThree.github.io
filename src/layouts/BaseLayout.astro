@@ -1,0 +1,117 @@
+---
+import '../styles/global.css';
+import '../styles/pages.css';
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = 'B面 · LuckyOneTwoThree',
+  description = '一个产品人的 A/B 面：出品、夜记、文化、人物。白天做产品，晚上研究什么值得熬夜。',
+} = Astro.props;
+const pageTitle = title.includes('B面') ? title : `${title} · B面`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang="zh-CN" data-theme="night">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#14110f" />
+    <meta name="color-scheme" content="dark light" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta name="twitter:card" content="summary" />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>{pageTitle}</title>
+    <script is:inline>
+      try {
+        const query = new URLSearchParams(location.search).get('theme');
+        const saved = localStorage.getItem('theme');
+        const theme = query === 'day' || query === 'night' ? query : saved;
+        if (theme === 'day' || theme === 'night') document.documentElement.dataset.theme = theme;
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">跳到正文</a>
+    <SiteHeader />
+    <main id="main">
+      <slot />
+    </main>
+    <SiteFooter />
+    <div class="secret-toast" id="secretToast" role="status" aria-live="polite">
+      <span class="mono">KONAMI / B-SIDE UNLOCKED</span>
+      <p>温室不必拆。但总得有人，去把窗推开。</p>
+    </div>
+    <script>
+      const root = document.documentElement;
+      const themeToggle = document.querySelector('[data-theme-toggle]');
+      const themeLabel = document.querySelector('[data-theme-label]');
+
+      function applyTheme(next) {
+        const isNight = next === 'night';
+        root.dataset.theme = next;
+        try { localStorage.setItem('theme', next); } catch (e) {}
+        if (themeToggle) {
+          themeToggle.setAttribute('aria-pressed', String(isNight));
+          themeToggle.setAttribute('aria-label', isNight ? '切换到日场' : '切换到夜场');
+        }
+        if (themeLabel) themeLabel.textContent = isNight ? '夜场' : '日场';
+        const themeMeta = document.querySelector('meta[name="theme-color"]');
+        if (themeMeta) themeMeta.setAttribute('content', isNight ? '#14110f' : '#f4ede0');
+      }
+
+      if (themeToggle) {
+        themeToggle.addEventListener('click', () => {
+          applyTheme(root.dataset.theme === 'night' ? 'day' : 'night');
+        });
+        applyTheme(root.dataset.theme || 'night');
+      }
+
+      const navToggle = document.querySelector('[data-nav-toggle]');
+      const header = document.querySelector('.site-header');
+      if (navToggle && header) {
+        navToggle.addEventListener('click', () => {
+          const open = header.classList.toggle('nav-open');
+          navToggle.setAttribute('aria-expanded', String(open));
+        });
+      }
+
+      // Konami code easter egg
+      const sequence = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+      let pos = 0;
+      const toast = document.getElementById('secretToast');
+      window.addEventListener('keydown', (event) => {
+        const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
+        if (key === sequence[pos]) {
+          pos += 1;
+          if (pos === sequence.length) {
+            pos = 0;
+            if (toast) {
+              toast.classList.add('is-visible');
+              window.setTimeout(() => toast.classList.remove('is-visible'), 6000);
+            }
+          }
+        } else {
+          pos = key === sequence[0] ? 1 : 0;
+        }
+      });
+
+      console.log(
+        "%c B面 / SIDE B ",
+        "background:#c8442a;color:#f4ede0;font-family:monospace;font-size:12px;padding:4px 8px;",
+        "\n温室不必拆。但总得有人，去把窗推开。\n→ /404.html 有台 Pong；↑↑↓↓←→←→BA 有另一面。"
+      );
+    </script>
+  </body>
+</html>

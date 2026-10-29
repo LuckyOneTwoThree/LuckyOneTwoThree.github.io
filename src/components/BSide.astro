@@ -1,0 +1,75 @@
+---
+interface Bside {
+  context: string;
+  cut: string;
+  wrong: string;
+  next: string;
+}
+interface Props {
+  id: string;
+  bside?: Bside;
+}
+const { id, bside } = Astro.props;
+---
+
+{bside ? (
+  <div class="bside-shell" data-bside data-bside-id={id}>
+    <div class="bside-toolbar">
+      <div class="side-switch" role="tablist" aria-label="正片与幕后">
+        <button type="button" role="tab" id={`${id}-tab-a`} aria-controls={`${id}-panel-a`} aria-selected="true" data-side-tab="a">A面 正片</button>
+        <button type="button" role="tab" id={`${id}-tab-b`} aria-controls={`${id}-panel-b`} aria-selected="false" data-side-tab="b">B面 幕后</button>
+      </div>
+      <span class="mono">B 面不是花絮，是判断的另一半。</span>
+    </div>
+    <div class="side-panel is-active" id={`${id}-panel-a`} role="tabpanel" aria-labelledby={`${id}-tab-a`} data-side-panel="a">
+      <slot />
+    </div>
+    <div class="side-panel" id={`${id}-panel-b`} role="tabpanel" aria-labelledby={`${id}-tab-b`} data-side-panel="b">
+      <div class="article-bside">
+        <p class="kicker">B面 / 幕后</p>
+        <div class="bside-notes">
+          <div class="bside-note"><span>01 当时的现场</span><p>{bside.context}</p></div>
+          <div class="bside-note"><span>02 被砍掉的</span><p>{bside.cut}</p></div>
+          <div class="bside-note"><span>03 我错在哪</span><p>{bside.wrong}</p></div>
+          <div class="bside-note"><span>04 如果重来</span><p>{bside.next}</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+) : (
+  <slot />
+)}
+
+<script>
+  document.querySelectorAll('[data-bside]').forEach((shell) => {
+    const tabs = Array.from(shell.querySelectorAll('[data-side-tab]'));
+    const panels = Array.from(shell.querySelectorAll('[data-side-panel]'));
+
+    function setSide(side, updateUrl = true) {
+      tabs.forEach((tab) => tab.setAttribute('aria-selected', String(tab.dataset.sideTab === side)));
+      panels.forEach((panel) => panel.classList.toggle('is-active', panel.dataset.sidePanel === side));
+      document.documentElement.dataset.side = side;
+      if (updateUrl) {
+        const url = new URL(window.location.href);
+        if (side === 'b') url.searchParams.set('side', 'b');
+        else url.searchParams.delete('side');
+        history.replaceState(null, '', url);
+      }
+    }
+
+    tabs.forEach((tab, index) => {
+      tab.addEventListener('click', () => setSide(tab.dataset.sideTab || 'a'));
+      tab.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
+          event.preventDefault();
+          const next = tabs[(index + 1) % tabs.length];
+          next.focus();
+          next.click();
+        }
+      });
+    });
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('side') === 'b') setSide('b', false);
+  });
+</script>

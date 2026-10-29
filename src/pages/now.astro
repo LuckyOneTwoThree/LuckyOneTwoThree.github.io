@@ -1,0 +1,51 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { now } from '../data/now';
+---
+
+<BaseLayout title="此刻" description="最近在做、在看、在玩、在听、在看球和在练什么。最后更新 2026.10.29。">
+  <section class="page-hero wrap">
+    <p class="kicker">Now / 06</p>
+    <h1 class="page-title">这份 Now<br />有点新鲜。</h1>
+    <p class="page-dek">最近在做、在看、在玩、在听、在看球和在练什么。不是实时，但尽量不假装。</p>
+    <div class="page-meta"><span>最后更新 {now.updated}</span><span>手动更新</span><span>不伪造实时</span></div>
+  </section>
+
+  <section class="section wrap">
+    <div class="section-head">
+      <div><p class="kicker">Current</p><h2>最近</h2></div>
+      <span class="mono">2026.10.29</span>
+    </div>
+    <dl class="now-list">
+      <div class="now-row"><dt>在做</dt><dd>{now.doing}</dd></div>
+      <div class="now-row"><dt>在看</dt><dd>{now.watching}</dd></div>
+      <div class="now-row"><dt>在玩</dt><dd>{now.playing}</dd></div>
+      <div class="now-row"><dt>在听</dt><dd>{now.listening}</dd></div>
+      <div class="now-row"><dt>在看球</dt><dd>{now.football}</dd></div>
+      <div class="now-row"><dt>在练</dt><dd>{now.training}</dd></div>
+    </dl>
+  </section>
+
+  <div class="wrap">
+    <div class="section-foot">
+      <span class="mono">装备架：等我把型号和理由整理完再放。</span>
+      <a class="text-link" href="/about">看人物 <span>→</span></a>
+    </div>
+  </div>
+
+  <section class="bside-section">
+    <div class="wrap bside-inner">
+      <div class="bside-grid">
+        <div class="bside-copy">
+          <p class="kicker">A note</p>
+          <h3>“在玩什么”不是人格，<br />“为什么还在玩”才是。</h3>
+          <p class="meta">这份 Now 会过期。超过 45 天没更新，我会把它标成“有点旧了”。</p>
+        </div>
+        <aside class="bside-margin">
+          <div class="stamp" aria-hidden="true">N</div>
+          <p>不写实时在线，<br />不伪造。</p>
+        </aside>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

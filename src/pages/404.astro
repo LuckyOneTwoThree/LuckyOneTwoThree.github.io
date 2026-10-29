@@ -1,0 +1,149 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="404" description="这一页不存在。打两拍再走？">
+  <section class="notfound-page wrap">
+    <div class="notfound-grid">
+      <div>
+        <p class="kicker">404 / Lost track</p>
+        <h1>走错<br />片场了。</h1>
+        <p>这一页不存在。可能是链接过期、拼写错了，或者它本来就没被写出来。</p>
+        <div class="hero-actions">
+          <a class="btn" href="/">返回首页 <span>↗</span></a>
+          <a class="text-link" href="/work">看出品 <span>→</span></a>
+        </div>
+        <p class="mono" style="margin-top: 30px; color: var(--muted);">或者，打两拍再走。</p>
+      </div>
+      <div>
+        <div class="pong-wrap">
+          <canvas id="pong" width="600" height="450" aria-label="Pong 小游戏：鼠标或手指移动左侧球拍"></canvas>
+          <p class="pong-hint">鼠标 / 手指移动球拍 · W/S 或 ↑↓ 也可 · 先到 7 分</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  const canvas = document.getElementById('pong');
+  if (canvas) {
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width;
+    const H = canvas.height;
+    const paddle = { w: 10, h: 78, x: 24, y: H / 2 - 39 };
+    const ai = { w: 10, h: 78, x: W - 34, y: H / 2 - 39 };
+    const ball = { x: W / 2, y: H / 2, r: 7, vx: 5, vy: 3.2 };
+    let playerScore = 0;
+    let aiScore = 0;
+    let keys = {};
+    let running = true;
+
+    function resetBall(direction) {
+      ball.x = W / 2;
+      ball.y = H / 2;
+      ball.vx = 5 * direction;
+      ball.vy = (Math.random() * 2 + 2) * (Math.random() > 0.5 ? 1 : -1);
+    }
+
+    function draw() {
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#17130f';
+      ctx.fillRect(0, 0, W, H);
+      ctx.strokeStyle = 'rgba(244,237,224,0.14)';
+      ctx.setLineDash([8, 12]);
+      ctx.beginPath();
+      ctx.moveTo(W / 2, 0);
+      ctx.lineTo(W / 2, H);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#f4ede0';
+      ctx.fillRect(paddle.x, paddle.y, paddle.w, paddle.h);
+      ctx.fillStyle = '#e26043';
+      ctx.fillRect(ai.x, ai.y, ai.w, ai.h);
+      ctx.beginPath();
+      ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
+      ctx.fillStyle = '#f4ede0';
+      ctx.fill();
+      ctx.font = '18px monospace';
+      ctx.fillStyle = 'rgba(244,237,224,0.55)';
+      ctx.fillText(String(playerScore), W / 2 - 48, 40);
+      ctx.fillText(String(aiScore), W / 2 + 32, 40);
+    }
+
+    function step() {
+      if (!running) return;
+      if (keys['w'] || keys['ArrowUp']) paddle.y -= 8;
+      if (keys['s'] || keys['ArrowDown']) paddle.y += 8;
+      paddle.y = Math.max(0, Math.min(H - paddle.h, paddle.y));
+
+      const target = ball.y - ai.h / 2;
+      ai.y += Math.max(-4.2, Math.min(4.2, target - ai.y));
+      ai.y = Math.max(0, Math.min(H - ai.h, ai.y));
+
+      ball.x += ball.vx;
+      ball.y += ball.vy;
+
+      if (ball.y - ball.r < 0 || ball.y + ball.r > H) {
+        ball.vy *= -1;
+        ball.y = Math.max(ball.r, Math.min(H - ball.r, ball.y));
+      }
+
+      if (ball.vx < 0 && ball.x - ball.r < paddle.x + paddle.w && ball.y > paddle.y && ball.y < paddle.y + paddle.h) {
+        ball.x = paddle.x + paddle.w + ball.r;
+        ball.vx = Math.abs(ball.vx) * 1.03;
+        ball.vy += (ball.y - (paddle.y + paddle.h / 2)) * 0.05;
+      }
+      if (ball.vx > 0 && ball.x + ball.r > ai.x && ball.y > ai.y && ball.y < ai.y + ai.h) {
+        ball.x = ai.x - ball.r;
+        ball.vx = -Math.abs(ball.vx) * 1.03;
+        ball.vy += (ball.y - (ai.y + ai.h / 2)) * 0.05;
+      }
+
+      if (ball.x < -20) { aiScore += 1; resetBall(1); }
+      if (ball.x > W + 20) { playerScore += 1; resetBall(-1); }
+
+      if (playerScore >= 7 || aiScore >= 7) {
+        running = false;
+        ctx.fillStyle = 'rgba(20,17,15,0.78)';
+        ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = '#f4ede0';
+        ctx.font = '30px "Songti SC", serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(playerScore >= 7 ? '你赢了' : 'AI 赢了', W / 2, H / 2 - 10);
+        ctx.font = '13px monospace';
+        ctx.fillStyle = 'rgba(244,237,224,0.62)';
+        ctx.fillText('按空格重开', W / 2, H / 2 + 28);
+        return;
+      }
+
+      draw();
+      requestAnimationFrame(step);
+    }
+
+    function restart() {
+      playerScore = 0;
+      aiScore = 0;
+      running = true;
+      resetBall(1);
+      requestAnimationFrame(step);
+    }
+
+    canvas.addEventListener('pointermove', (event) => {
+      const rect = canvas.getBoundingClientRect();
+      const y = ((event.clientY - rect.top) / rect.height) * H;
+      paddle.y = Math.max(0, Math.min(H - paddle.h, y - paddle.h / 2));
+    });
+
+    window.addEventListener('keydown', (event) => {
+      keys[event.key] = true;
+      if (event.key === ' ') {
+        event.preventDefault();
+        if (!running) restart();
+      }
+    });
+    window.addEventListener('keyup', (event) => { keys[event.key] = false; });
+
+    requestAnimationFrame(step);
+  }
+</script>

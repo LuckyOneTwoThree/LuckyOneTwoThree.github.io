@@ -1,0 +1,57 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const work = (await getCollection('work')).sort((a, b) => a.data.order - b.data.order);
+const briefs = [
+  { title: 'keel', desc: '可被机器强制执行的项目管理 OS。', note: 'v3.0 · 2026.09' },
+  { title: 'Orbis', desc: '跨厂商二次元 PC 游戏中心。', note: '2026.09' },
+  { title: 'DropNest', desc: '把 MacBook 的刘海变成第二桌面。', note: '2026.09' },
+  { title: '鉴言 / 拾光', desc: '给文章贴配料表；把 RSS 变成每日简报。', note: '实验 / 已归档' },
+];
+---
+
+<BaseLayout title="出品" description="我做过的工具：决策、足球、治理、技能体系。项目状态以最后提交为准。">
+  <section class="page-hero wrap">
+    <p class="kicker">Selected work / 01</p>
+    <h1 class="page-title">做出来的东西，<br />和它们没解决的问题。</h1>
+    <p class="page-dek">我做过一些工具，它们大多在解决同一个问题：时间有限、信息过载、人又容易自欺时，怎么把今晚花在值得的地方。这里只放 3+1 个深度项目，其余是简讯。</p>
+    <div class="page-meta"><span>4 个深度项目</span><span>状态以最后提交为准</span><span>最后核对 2026.10.29</span></div>
+  </section>
+
+  <section class="section wrap">
+    <div class="work-list">
+      {work.map((entry, index) => (
+        <a class="work-row" href={`/work/${entry.id}`}>
+          <span class="work-index">{String(index + 1).padStart(2, '0')}</span>
+          <span class="work-main"><strong>{entry.data.title}</strong><em>{entry.data.oneLiner}</em></span>
+          <span class="work-tags">{entry.data.themes.join(' / ')}<br />{entry.data.lastUpdate}</span>
+          <span class="work-status"><i class:list={['dot', { paused: entry.data.status.includes('暂停') }]}></i>{entry.data.status}</span>
+          <span class="work-arrow" aria-hidden="true">↗</span>
+        </a>
+      ))}
+    </div>
+    <div class="section-foot">
+      <span class="mono">不是每个项目都在运行，但每个项目都留下了判断。</span>
+      <span class="mono">运行中 1 · 已发布暂停 3</span>
+    </div>
+  </section>
+
+  <section class="section wrap">
+    <div class="section-head">
+      <div><p class="kicker">Briefs / 简讯</p><h2>实验室与简讯</h2></div>
+      <span class="mono">不假装每个都是产品</span>
+    </div>
+    <div class="work-list">
+      {briefs.map((item, index) => (
+        <div class="work-row">
+          <span class="work-index">{String(index + 1).padStart(2, '0')}</span>
+          <span class="work-main"><strong>{item.title}</strong><em>{item.desc}</em></span>
+          <span class="work-tags">{item.note}</span>
+          <span class="work-status"><i class="dot paused"></i>简讯</span>
+          <span class="work-arrow" aria-hidden="true">·</span>
+        </div>
+      ))}
+    </div>
+  </section>
+</BaseLayout>

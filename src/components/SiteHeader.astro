@@ -1,0 +1,35 @@
+---
+const pathname = Astro.url.pathname;
+const links = [
+  { href: '/work', label: '出品' },
+  { href: '/notes', label: '夜记' },
+  { href: '/culture', label: '文化' },
+  { href: '/corrections', label: '更正' },
+  { href: '/about', label: '人物' },
+];
+const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+---
+
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a class="brand" href="/" aria-label="返回首页">
+      <span class="brand-person">LuckyOneTwoThree</span>
+      <span class="brand-title">B面 <em>SIDE B</em></span>
+    </a>
+    <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-label="打开导航">
+      <span></span><span></span>
+    </button>
+    <nav class="main-nav" aria-label="主导航">
+      {links.map((link) => (
+        <a class={isActive(link.href) ? 'active' : ''} href={link.href}>{link.label}</a>
+      ))}
+    </nav>
+    <div class="header-meta">
+      <a class="header-now" href="/now">此刻</a>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-pressed="true" aria-label="切换到日场">
+        <span class="orb" aria-hidden="true"></span>
+        <span data-theme-label>夜场</span>
+      </button>
+    </div>
+  </div>
+</header>

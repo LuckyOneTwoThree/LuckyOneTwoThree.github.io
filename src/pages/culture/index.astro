@@ -1,0 +1,109 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { tierItems } from '../../data/tier';
+import { now } from '../../data/now';
+---
+
+<BaseLayout title="文化" description="游戏、番剧、美剧、音乐、足球。不是客观评分，是我愿意为它花掉哪个夜晚。">
+  <section class="page-hero wrap">
+    <p class="kicker">Culture / 03</p>
+    <h1 class="page-title">我替你先看、<br />先玩、先熬。</h1>
+    <p class="page-dek">不是客观评分，是我的口味。标准只有一个：我愿意为它花掉哪个夜晚。档位是占位初排，你随时可以改。</p>
+    <div class="page-meta"><span>{tierItems.length} 条榜单</span><span>6 游戏 · 6 番剧/美剧</span><span>音乐 / 装备第二批</span></div>
+  </section>
+
+  <section class="section wrap">
+    <div class="section-head">
+      <div><p class="kicker">The tier list</p><h2>夯到拉</h2></div>
+      <span class="mono">占位初排 · 待你改</span>
+    </div>
+
+    <div class="tier-toolbar">
+      <div class="tier-filters" role="group" aria-label="按媒介筛选">
+        <button class="tier-filter is-active" type="button" data-filter="全部" aria-pressed="true">全部</button>
+        <button class="tier-filter" type="button" data-filter="游戏" aria-pressed="false">游戏</button>
+        <button class="tier-filter" type="button" data-filter="番剧 / 美剧" aria-pressed="false">番剧 / 美剧</button>
+      </div>
+      <span class="mono">评分标准：愿意为它花掉哪个夜晚</span>
+    </div>
+
+    <div class="tier-grid" id="tierGrid">
+      {tierItems.map((item) => (
+        <article class="tier-card" id={item.slug} data-medium={item.medium}>
+          <div class="tier-card-top">
+            <span class="tier-badge">{item.tier}</span>
+            <span class="mono">{item.medium} · {item.year}</span>
+          </div>
+          <h3>{item.title}</h3>
+          <p>{item.verdict}</p>
+          <p style="margin-top: 10px; color: var(--muted);">{item.why}</p>
+          <div class="tier-card-footer">
+            <span>适合：{item.duration}</span>
+            <span>剧透：{item.spoiler}</span>
+          </div>
+        </article>
+      ))}
+    </div>
+    <p class="tier-empty" id="tierEmpty">这个筛选下还没有条目。</p>
+  </section>
+
+  <section class="bside-section" id="watch">
+    <div class="wrap bside-inner">
+      <div class="section-head">
+        <div><p class="kicker">This week</p><h2>本周看台</h2></div>
+        <a class="text-link" href="/work/nightowl">夜猫看台 <span>→</span></a>
+      </div>
+      <div class="bside-grid">
+        <div class="bside-copy">
+          <p class="kicker">英超 / 欧冠</p>
+          <h3>今晚哪场值得熬，<br />哪场应该睡。</h3>
+          <p class="meta">看台笔记待补；先用夜猫看台的逻辑：看点 ÷ 睡眠成本。</p>
+        </div>
+        <aside class="bside-margin">
+          <div class="stamp" aria-hidden="true">90'</div>
+          <p>少熬几场，<br />且熬的那几场不后悔。</p>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <section class="section wrap">
+    <div class="section-head">
+      <div><p class="kicker">Night loop</p><h2>夜间循环</h2></div>
+      <span class="mono">现在在听</span>
+    </div>
+    <div class="tier-list">
+      <div class="tier-row">
+        <span class="tier-letter">♪</span>
+        <span class="tier-title">Risk It All</span>
+        <span class="tier-verdict">Bruno Mars · 循环到第五遍还没切。</span>
+        <span class="tier-time">夜间</span>
+        <span class="tier-arrow">·</span>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  const filters = Array.from(document.querySelectorAll('[data-filter]'));
+  const cards = Array.from(document.querySelectorAll('.tier-card'));
+  const empty = document.getElementById('tierEmpty');
+
+  filters.forEach((button) => {
+    button.addEventListener('click', () => {
+      const value = button.dataset.filter;
+      filters.forEach((item) => {
+        const active = item === button;
+        item.classList.toggle('is-active', active);
+        item.setAttribute('aria-pressed', String(active));
+      });
+      let visible = 0;
+      cards.forEach((card) => {
+        const show = value === '全部' || card.dataset.medium === value;
+        card.classList.toggle('is-hidden', !show);
+        if (show) visible += 1;
+      });
+      if (empty) empty.classList.toggle('is-visible', visible === 0);
+    });
+  });
+</script>

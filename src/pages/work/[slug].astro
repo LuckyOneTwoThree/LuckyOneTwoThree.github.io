@@ -1,0 +1,74 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import BSide from '../../components/BSide.astro';
+
+export async function getStaticPaths() {
+  const work = await getCollection('work');
+  return work.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const { data } = entry;
+const coverMark = data.title.slice(0, 1).toUpperCase();
+---
+
+<BaseLayout title={data.title} description={data.dek}>
+  <section class="project-hero wrap">
+    <div class="breadcrumbs"><a href="/work">出品</a><span>{data.title}</span></div>
+    <div class="project-hero-grid">
+      <div>
+        <p class="kicker">{data.themes.join(' / ')}</p>
+        <h1>{data.title}</h1>
+        <p class="one-liner">{data.oneLiner}</p>
+        <div class="project-meta">
+          <span class="project-status"><i class:list={['dot', { paused: data.status.includes('暂停') }]}></i>{data.status}</span>
+          <span>{data.role}</span>
+          <span>{data.timeframe}</span>
+          <span>最后更新 {data.lastUpdate}</span>
+        </div>
+        {data.links && (
+          <div class="project-links">
+            {data.links.github && <a class="text-link" href={data.links.github} target="_blank" rel="noreferrer">GitHub <span>↗</span></a>}
+            {data.links.demo && <a class="text-link" href={data.links.demo} target="_blank" rel="noreferrer">Demo <span>↗</span></a>}
+            {data.links.download && <a class="text-link" href={data.links.download} target="_blank" rel="noreferrer">下载 <span>↗</span></a>}
+          </div>
+        )}
+      </div>
+      {data.cover ? (
+        <figure class="project-cover"><img src={data.cover} alt={`${data.title} 项目封面`} loading="eager" /></figure>
+      ) : (
+        <div class="project-cover typographic">
+          <span class="mono">B面 / 出品 / {data.lastUpdate}</span>
+          <span class="cover-mark">{coverMark}</span>
+          <span class="cover-note">{data.oneLiner}</span>
+        </div>
+      )}
+    </div>
+  </section>
+
+  <section class="project-page wrap">
+    <div class="project-body">
+      <BSide id={entry.id} bside={data.bside}>
+        <div class="prose"><Content /></div>
+      </BSide>
+    </div>
+
+    {data.screenshots.length > 0 && (
+      <div class="project-screens">
+        {data.screenshots.map((shot) => (
+          <figure class="project-screenshot">
+            <img src={shot.src} alt={shot.alt} loading="lazy" />
+            <figcaption>{shot.caption}</figcaption>
+          </figure>
+        ))}
+      </div>
+    )}
+
+    <div class="section-foot">
+      <a class="text-link" href="/work">← 返回出品</a>
+      <span class="mono">状态：{data.status} · 最后更新 {data.lastUpdate}</span>
+    </div>
+  </section>
+</BaseLayout>

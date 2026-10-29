@@ -1,0 +1,54 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const notes = await getCollection('notes');
+const correction = notes.find((note) => note.id === 'corrections');
+---
+
+<BaseLayout title="更正" description="我写错、想错、后来改掉的东西。一个不接受任何反例的框架，不是价值观，是信仰。">
+  <section class="page-hero wrap">
+    <p class="kicker">Corrections / 04</p>
+    <h1 class="page-title">更正，<br />比正确更像一个人。</h1>
+    <p class="page-dek">个人网站很少承认错误，所以这个页面很重要。这里记录我写错、想错、后来改掉的东西。不是自曝其短，是给判断留一条可回退的路。</p>
+    <div class="page-meta"><span>持续更新</span><span>每条都有来源</span><span>不删旧版</span></div>
+  </section>
+
+  <section class="section wrap">
+    <div class="section-head">
+      <div><p class="kicker">Correction log</p><h2>更正记录</h2></div>
+      <span class="mono">一个不接受反例的框架，不是价值观，是信仰</span>
+    </div>
+    <div class="correction-list">
+      <a class="correction-row" href="/notes/corrections">
+        <span class="mono">01 / 2026.10</span>
+        <span><h2>{correction?.data.title ?? '我写过两版相反的星铁'}</h2><p>{correction?.data.dek ?? '为什么后来我把一个漂亮结论作废了。'}</p></span>
+        <span class="status">已发布</span>
+      </a>
+      <a class="correction-row" href="/notes/greenhouse?side=b">
+        <span class="mono">02 / 2026.10</span>
+        <span><h2>Biosphere 2：我删掉了“长得更快”</h2><p>流行版本被简化过；只保留“缺风→木质变弱”，不拿它当论据。</p></span>
+        <span class="status">见 B 面</span>
+      </a>
+    </div>
+  </section>
+
+  <section class="bside-section">
+    <div class="wrap bside-inner">
+      <div class="section-head">
+        <div><p class="kicker">Why this page</p><h2>为什么值得留一页</h2></div>
+      </div>
+      <div class="bside-grid">
+        <div class="bside-copy">
+          <p class="kicker">判断的另一半</p>
+          <h3>漂亮的句子，<br />不一定是准确的句子。</h3>
+          <p class="meta">写作时最容易骗过自己的，是“这段读起来很顺”。更正页就是给这种时刻留的刹车。</p>
+        </div>
+        <aside class="bside-margin">
+          <div class="stamp" aria-hidden="true">✓</div>
+          <p>先列反例，<br />再写结论。</p>
+        </aside>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

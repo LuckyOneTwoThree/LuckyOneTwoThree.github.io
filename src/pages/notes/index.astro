@@ -1,0 +1,50 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const notes = (await getCollection('notes')).sort((a, b) => b.data.date.localeCompare(a.data.date));
+const longNotes = notes.filter((note) => note.data.readingTime >= 5);
+const shortNotes = notes.filter((note) => note.data.readingTime < 5);
+---
+
+<BaseLayout title="夜记" description="长文、短记、更正。关于产品、游戏、球赛和那些想明白/没想明白的事。">
+  <section class="page-hero wrap">
+    <p class="kicker">Notes / 02</p>
+    <h1 class="page-title">写下来的，<br />才算想清楚。</h1>
+    <p class="page-dek">长文放判断，短记放句子。这里不追热点，只放那些我愿意改三遍、也愿意被推翻的东西。</p>
+    <div class="page-meta"><span>{longNotes.length} 篇长文</span><span>{shortNotes.length} 条短记</span><span>持续更新</span></div>
+  </section>
+
+  <section class="section wrap">
+    <div class="section-head">
+      <div><p class="kicker">Long form</p><h2>长文</h2></div>
+      <span class="mono">每篇都有 A/B 面</span>
+    </div>
+    <div class="notes-list">
+      {longNotes.map((note, index) => (
+        <a class="note-row" href={`/notes/${note.id}`}>
+          <span class="note-index">{String(index + 1).padStart(2, '0')}</span>
+          <span><h2>{note.data.title}</h2><p class="note-dek">{note.data.dek}</p></span>
+          <span class="note-meta">{note.data.date} · {note.data.readingTime} 分钟<br />{note.data.series}</span>
+          <span class="note-arrow" aria-hidden="true">↗</span>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <section class="section wrap">
+    <div class="section-head">
+      <div><p class="kicker">Short notes</p><h2>短记</h2></div>
+      <span class="mono">一段话，一个判断</span>
+    </div>
+    <div class="short-notes">
+      {shortNotes.map((note) => (
+        <a class="short-note" href={`/notes/${note.id}`}>
+          <span class="mono">{note.data.series} / {note.data.date}</span>
+          <h3>{note.data.title}</h3>
+          <p>{note.data.dek}</p>
+        </a>
+      ))}
+    </div>
+  </section>
+</BaseLayout>

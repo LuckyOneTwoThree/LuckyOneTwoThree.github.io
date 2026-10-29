@@ -1,0 +1,90 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import BSide from '../../components/BSide.astro';
+
+export async function getStaticPaths() {
+  const notes = await getCollection('notes');
+  return notes.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { Content, headings } = await render(entry);
+const { data } = entry;
+const crumb = data.series === '夜记' ? (data.readingTime >= 5 ? '长文' : '短记') : data.series;
+const toc = headings.filter((heading) => heading.depth === 2);
+---
+
+<BaseLayout title={data.title} description={data.dek}>
+  <div class="reading-progress" aria-hidden="true"><span id="readingProgress"></span></div>
+  <article class="article-page wrap">
+    <div class="breadcrumbs"><a href="/notes">夜记</a><span>{crumb}</span></div>
+    <header class="article-header">
+      <p class="kicker">{data.series}</p>
+      <h1>{data.title}</h1>
+      <p class="dek">{data.dek}</p>
+      <div class="meta">
+        <span>{data.date}</span>
+        <span>{data.readingTime} 分钟</span>
+        {data.updated && <span>更新于 {data.updated}</span>}
+        <button class="copy-link" type="button" data-copy-link>复制链接</button>
+      </div>
+    </header>
+
+    <BSide id={entry.id} bside={data.bside}>
+      {toc.length > 1 && (
+        <nav class="article-toc" aria-label="目录">
+          <span class="mono">目录 / Contents</span>
+          <ul>{toc.map((heading) => <li><a href={`#${heading.slug}`}>{heading.text}</a></li>)}</ul>
+        </nav>
+      )}
+      <div class="prose"><Content /></div>
+    </BSide>
+
+    <div class="section-foot">
+      <a class="text-link" href="/notes">← 返回夜记</a>
+      <span class="mono">{data.series} · {data.date}</span>
+    </div>
+  </article>
+</BaseLayout>
+
+<script>
+  const progress = document.getElementById("readingProgress");
+  if (progress) {
+    const update = () => {
+      const article = document.querySelector(".article-page");
+      if (!article) return;
+      const top = article.getBoundingClientRect().top + window.scrollY;
+      const height = article.offsetHeight - window.innerHeight + 120;
+      const ratio = Math.max(0, Math.min(1, (window.scrollY - top + 120) / Math.max(1, height)));
+      progress.style.width = `${ratio * 100}%`;
+    };
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+  }
+  document.querySelectorAll(".article-toc a").forEach((link) => {
+    link.addEventListener("click", (event) => {
+      const id = decodeURIComponent(link.getAttribute("href").slice(1));
+      const target = document.getElementById(id);
+      if (target) {
+        event.preventDefault();
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+        history.replaceState(null, "", `#${encodeURIComponent(id)}`);
+      }
+    });
+  });
+
+  const copyButton = document.querySelector("[data-copy-link]");
+  if (copyButton) {
+    copyButton.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        copyButton.textContent = "已复制";
+        window.setTimeout(() => { copyButton.textContent = "复制链接"; }, 1800);
+      } catch (e) {
+        copyButton.textContent = "复制失败";
+      }
+    });
+  }
+</script>
